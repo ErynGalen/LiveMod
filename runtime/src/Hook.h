@@ -9,8 +9,7 @@ class Hook {
     void *m_pDestination = nullptr;
     void *m_pTrampoline = nullptr;
 
-    size_t m_hookSize =
-        0; // size needed at the beginning of the hooked function
+    size_t m_hookSize = 0; // size needed at the beginning of the hooked function
     size_t m_trampolineSize = 0;
 
     bool m_isHooked = false;
@@ -28,8 +27,7 @@ class Hook {
     void deb() {
         printf("- %d, %d\n", (int)m_hookSize, (int)m_trampolineSize);
         for (unsigned char *byte_addr = (unsigned char *)m_pTrampoline;
-             byte_addr < (unsigned char *)m_pTrampoline + m_trampolineSize;
-             byte_addr++) {
+             byte_addr < (unsigned char *)m_pTrampoline + m_trampolineSize; byte_addr++) {
             printf("0x%x ", *byte_addr);
         }
         printf("\n");

@@ -27,17 +27,14 @@
 
 using namespace llvm;
 
-std::vector<MCInst> instructions(const MCDisassembler &disAsm,
-                                 std::vector<uint8_t> bytes,
-                                 raw_ostream &output) {
+std::vector<MCInst> instructions(const MCDisassembler &disAsm, std::vector<uint8_t> bytes, raw_ostream &output) {
     ArrayRef<uint8_t> data(bytes.data(), bytes.size());
 
     std::vector<MCInst> instrs;
     uint64_t instrSize = 0;
     for (uint64_t pos = 0; pos < bytes.size(); pos += instrSize) {
         MCInst instr;
-        MCDisassembler::DecodeStatus status = disAsm.getInstruction(
-            instr, instrSize, data.slice(pos), pos, output);
+        MCDisassembler::DecodeStatus status = disAsm.getInstruction(instr, instrSize, data.slice(pos), pos, output);
         switch (status) {
         case MCDisassembler::DecodeStatus::Fail:
             std::cout << "Invalid instruction" << std::endl;
@@ -46,8 +43,7 @@ std::vector<MCInst> instructions(const MCDisassembler &disAsm,
             std::cout << "Weird instruction" << std::endl;
 
         case MCDisassembler::DecodeStatus::Success:
-            std::cout << "Decoded instruction, size = " << instrSize
-                      << std::endl;
+            std::cout << "Decoded instruction, size = " << instrSize << std::endl;
             instr.print(output);
             output << '\n';
             instrs.push_back(instr);
@@ -69,13 +65,11 @@ int main(int argc, char **argv) {
     std::cout << "Using triple " << triple.getTriple() << std::endl;
 
     std::string targetError;
-    const Target *target =
-        TargetRegistry::lookupTarget(tripleName, targetError);
+    const Target *target = TargetRegistry::lookupTarget(tripleName, targetError);
     if (!target) {
         std::cout << "Can't create target: " << targetError << std::endl;
     }
-    std::unique_ptr<MCSubtargetInfo> subTargetInfo(
-        target->createMCSubtargetInfo(tripleName, "", ""));
+    std::unique_ptr<MCSubtargetInfo> subTargetInfo(target->createMCSubtargetInfo(tripleName, "", ""));
     if (!subTargetInfo) {
         std::cout << "Can't create sub target info" << std::endl;
         return 1;
@@ -83,24 +77,20 @@ int main(int argc, char **argv) {
 
     MCRegisterInfo *registerInfo = target->createMCRegInfo(tripleName);
     MCTargetOptions options{};
-    MCAsmInfo *asmInfo =
-        target->createMCAsmInfo(*registerInfo, tripleName, options);
+    MCAsmInfo *asmInfo = target->createMCAsmInfo(*registerInfo, tripleName, options);
     MCInstrInfo *instrInfo = target->createMCInstrInfo();
 
     MCContext context(triple, asmInfo, registerInfo, &*subTargetInfo);
 
-    std::vector<uint8_t> buffer = {0x90, 0x50, 0x58, 0x64, 0x48, 0x8b,
-                                   0x04, 0x25, 0x28, 0x00, 0x00, 0x00};
+    std::vector<uint8_t> buffer = {0x90, 0x50, 0x58, 0x64, 0x48, 0x8b, 0x04, 0x25, 0x28, 0x00, 0x00, 0x00};
 
-    std::unique_ptr<MCDisassembler> disAsm(
-        target->createMCDisassembler(*subTargetInfo, context));
+    std::unique_ptr<MCDisassembler> disAsm(target->createMCDisassembler(*subTargetInfo, context));
     if (!disAsm) {
         std::cout << "Can't create disassembler" << std::endl;
     }
 
     auto instrs = instructions(*disAsm, buffer, outs());
-    MCInstPrinter *printer = target->createMCInstPrinter(
-        triple, 0, *asmInfo, *instrInfo, *registerInfo);
+    MCInstPrinter *printer = target->createMCInstPrinter(triple, 0, *asmInfo, *instrInfo, *registerInfo);
     for (MCInst &i : instrs) {
         printer->printInst(&i, 0, "", *subTargetInfo, outs());
         outs() << '\n';

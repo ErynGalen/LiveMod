@@ -45,7 +45,7 @@ int our_main(int argc, char **argv) {
 static Hook hook_my_func;
 
 void my_func() {
-    printf("my overriden func\n");
+    puts("[my_func]");
     void (*orig)() = (void (*)())hook_my_func.original();
     hook_my_func.deb();
     orig();

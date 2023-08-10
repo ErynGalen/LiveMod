@@ -31,15 +31,12 @@ bool Hook::hook() {
     constexpr size_t MIN_HOOK_SIZE = sizeof(ABSOLUTE_JMP) + sizeof(POP_RAX);
     size_t hookSize = 0;
     while (hookSize < MIN_HOOK_SIZE) {
-        hookSize += instruction_length((uint8_t *)m_pSource + hookSize);
+        hookSize += instructionLength((uint8_t *)m_pSource + hookSize, 16); // arbitrary max length
         printf("%d, ", (int)hookSize);
     }
     printf("\n");
-    hookSize += 4; // margin because `instruction_length` isn't correct
     size_t trampolineSize = hookSize + sizeof(PUSH_RAX) + sizeof(ABSOLUTE_JMP);
-    m_pTrampoline =
-        mmap(NULL, trampolineSize, PROT_READ | PROT_WRITE | PROT_EXEC,
-             MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    m_pTrampoline = mmap(NULL, trampolineSize, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
     // populate trampoline
     memcpy(m_pTrampoline, m_pSource, hookSize); // original function
@@ -48,32 +45,26 @@ bool Hook::hook() {
     memcpy((uint8_t *)m_pTrampoline + hookSize + sizeof(PUSH_RAX), ABSOLUTE_JMP,
            sizeof(ABSOLUTE_JMP)); // jump
     // set jump address
-    *(uint64_t *)((uint8_t *)m_pTrampoline + hookSize + sizeof(PUSH_RAX) +
-                  ABSOLUTE_JMP_ADDR_OFFSET) =
+    *(uint64_t *)((uint8_t *)m_pTrampoline + hookSize + sizeof(PUSH_RAX) + ABSOLUTE_JMP_ADDR_OFFSET) =
         (uint64_t)(uint8_t *)m_pSource + sizeof(ABSOLUTE_JMP);
 
     // hook function
     long page_size = sysconf(_SC_PAGESIZE);
-    mprotect((uint8_t *)m_pSource - ((long)m_pSource % page_size), page_size,
-             PROT_READ | PROT_WRITE | PROT_EXEC);
+    mprotect((uint8_t *)m_pSource - ((long)m_pSource % page_size), page_size, PROT_READ | PROT_WRITE | PROT_EXEC);
     memcpy(m_pSource, ABSOLUTE_JMP, sizeof(ABSOLUTE_JMP));
     // restore RAX saved in the trampoline
-    memcpy((uint8_t *)m_pSource + sizeof(ABSOLUTE_JMP), POP_RAX,
-           sizeof(POP_RAX));
+    memcpy((uint8_t *)m_pSource + sizeof(ABSOLUTE_JMP), POP_RAX, sizeof(POP_RAX));
     // fill the gap with NOP
-    for (uint8_t *instruction =
-             (uint8_t *)m_pSource + sizeof(ABSOLUTE_JMP) + sizeof(POP_RAX);
+    for (uint8_t *instruction = (uint8_t *)m_pSource + sizeof(ABSOLUTE_JMP) + sizeof(POP_RAX);
          instruction < (uint8_t *)m_pSource + hookSize; ++instruction) {
         *instruction = NOP_BYTE;
     }
 
     // set jump address
-    *(uint64_t *)((uint8_t *)m_pSource + ABSOLUTE_JMP_ADDR_OFFSET) =
-        (uint64_t)m_pDestination;
+    *(uint64_t *)((uint8_t *)m_pSource + ABSOLUTE_JMP_ADDR_OFFSET) = (uint64_t)m_pDestination;
 
     // restore default protection
-    mprotect((uint8_t *)m_pSource - ((long)m_pSource % page_size), page_size,
-             PROT_READ | PROT_EXEC);
+    mprotect((uint8_t *)m_pSource - ((long)m_pSource % page_size), page_size, PROT_READ | PROT_EXEC);
 
     m_isHooked = true;
     m_hookSize = hookSize;

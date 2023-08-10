@@ -3,9 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void my_func() {
-    printf("my_func\n");
-}
+void my_func() { printf("my_func\n"); }
 
 int main() {
     my_func();
@@ -16,8 +14,7 @@ int main() {
     if (dladdr(address, &info)) {
         printf("Boo error: %s\n", dlerror());
     }
-    printf("Program: %p\nAddress of %s: %p\nError: %s\n", program, sym_name,
-           address, dlerror());
+    printf("Program: %p\nAddress of %s: %p\nError: %s\n", program, sym_name, address, dlerror());
     printf("Info:\n  file: %s, address: %p,\n  nearest symbol: %s, address of "
            "nearest: %p\n",
            info.dli_fname, info.dli_fbase, info.dli_sname, info.dli_saddr);

@@ -5,4 +5,6 @@ add_library(runtime SHARED
   src/Hook.cpp
 
   src/asm/asm.cpp
+  src/asm/GlobalLLVM.cpp
 )
+target_link_libraries(runtime PRIVATE -lLLVM)
