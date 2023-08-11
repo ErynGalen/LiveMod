@@ -7,9 +7,9 @@ static Hook hook_main;
 int our_main(int argc, char **argv) {
     printf("Wee the hook hooked!\n");
     printf("we can print the program name: %s\n", argv[0]);
-    int (*orig)(int, char **) = (int (*)(int, char **))hook_main.original();
-    printf("call orig: %p\n", orig);
-    orig(argc, argv);
+    ORIGINAL(hook_main, int, main, int, char **);
+    printf("call orig: %p\n", orig_main);
+    orig_main(argc, argv);
     return 0;
 }
 
@@ -17,8 +17,8 @@ static Hook hook_my_func;
 
 void my_func() {
     puts("[my_func]");
-    void (*orig)() = (void (*)())hook_my_func.original();
-    orig();
+    ORIGINAL(hook_my_func, void, puts);
+    orig_puts();
 }
 
 __attribute__((constructor)) void init_hooks() {

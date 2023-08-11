@@ -54,4 +54,8 @@ class Hook {
     Hook &operator=(const Hook &) = delete;
 };
 
+/// retrieve `orig_func` from the specified hook, whose arguments have the types specified in `...`
+#define ORIGINAL(hook, ret_type, func, ...)                                                                            \
+    ret_type (*orig_##func)(__VA_ARGS__) = (ret_type(*)(__VA_ARGS__))hook.original()
+
 #endif
