@@ -1,5 +1,6 @@
 add_library(runtime SHARED
   src/dlhook.cpp
+  src/process.cpp
   src/query.cpp
   src/GlobalContext.cpp
   src/Hook.cpp

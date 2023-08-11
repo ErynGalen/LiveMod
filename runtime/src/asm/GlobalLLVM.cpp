@@ -30,7 +30,6 @@ bool GlobalLLVM::init() {
 
     m_pSubTargetInfo = std::unique_ptr<MCSubtargetInfo>(
         m_pTarget->createMCSubtargetInfo(m_targetTriple.getTriple(), sys::getHostCPUName(), ""));
-    std::cerr << "[LLVM] CPU name: " << sys::getHostCPUName().str() << std::endl;
     if (!m_pSubTargetInfo) {
         std::cout << "[LLVM] Couldn't initialize SubTargetInfo" << std::endl;
         return false;
