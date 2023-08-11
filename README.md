@@ -1,3 +1,26 @@
+# LiveMod
+A library to hook at run-time an executable.
+
+> **Note**
+> Only Linux on x86_64 is supported so far, but it's possible to port the library to other platforms.
+
+## Using it
+### Building
+In the project root:
+```
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+### Running
+The runtime library is `build/runtime/libruntime.so`.
+
+To hook an executable, execute it as follow:
+```
+LD_PRELOAD=<path-to-LiveMod>/build/runtime/libruntime.so <executable>
+```
+
 # Ideas
 
 ### Overriding dynamically linked symbols
@@ -8,6 +31,6 @@ Trampoline hooks allow to replace statically linked functions with a function of
 This is done at run-time.
 
 ### Getting the symbols
-* `nm`, `objdump`, `readelf` allow getting a list of symbols in an ELF file.
-* `dlsym(name, NULL)` allow getting the address of a *dynamic* symbol at run-time
-* `elfhacks` (library) allow getting the address of any symbol at run-time, at the cost of reading ELF files.
+* `objdump`, allows getting a list of symbols in the executable file.
+* `/proc/self/maps` allows tranforming the symbol in the object file to a run-time address
+* `dlsym(name, NULL)` allows getting the address of a *dynamic* symbol at run-time
