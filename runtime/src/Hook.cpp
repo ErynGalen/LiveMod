@@ -32,9 +32,8 @@ bool Hook::hook() {
     size_t hookSize                = 0;
     while (hookSize < MIN_HOOK_SIZE) {
         hookSize += instructionLength((uint8_t *)m_pSource + hookSize, 16); // arbitrary max length
-        printf("%d, ", (int)hookSize);
     }
-    printf("\n");
+
     size_t trampolineSize = hookSize + sizeof(PUSH_RAX) + sizeof(ABSOLUTE_JMP);
     m_pTrampoline = mmap(NULL, trampolineSize, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 

@@ -2,6 +2,7 @@
 
 #include "GlobalContext.h"
 #include "dlhook.h"
+#include <cstdio>
 #include <cstring>
 
 #ifdef __linux__
@@ -18,15 +19,12 @@ DYNHOOK pid_t fork() {
     link_original((void **)&orig, "fork");
 
     pid_t pid = orig();
-    if (g_Context.m_isNative) {
-        return pid;
-    }
 
     if (pid == 0) {
         // in child process, fix the environment
         for (int n = 0; environ[n] != NULL; n++) {
             static char LD_PRELOAD[] = "LD_PRELOAD";
-            if (strncmp(environ[n], LD_PRELOAD, sizeof(LD_PRELOAD)) == 0) {
+            if (strncmp(environ[n], LD_PRELOAD, sizeof(LD_PRELOAD) - 1) == 0) {
                 environ[n][0] = 'D'; // don't LD_PRELOAD the child process
             }
         }
