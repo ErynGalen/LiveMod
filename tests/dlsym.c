@@ -8,8 +8,8 @@ void my_func() { printf("my_func\n"); }
 int main() {
     my_func();
     const char *sym_name = "_start";
-    void *program = dlopen(NULL, RTLD_NOW);
-    void *address = dlsym(NULL, sym_name);
+    void *program        = dlopen(NULL, RTLD_NOW);
+    void *address        = dlsym(NULL, sym_name);
     Dl_info info;
     if (dladdr(address, &info)) {
         printf("Boo error: %s\n", dlerror());

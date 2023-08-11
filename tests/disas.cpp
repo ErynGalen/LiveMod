@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 
     MCRegisterInfo *registerInfo = target->createMCRegInfo(tripleName);
     MCTargetOptions options{};
-    MCAsmInfo *asmInfo = target->createMCAsmInfo(*registerInfo, tripleName, options);
+    MCAsmInfo *asmInfo     = target->createMCAsmInfo(*registerInfo, tripleName, options);
     MCInstrInfo *instrInfo = target->createMCInstrInfo();
 
     MCContext context(triple, asmInfo, registerInfo, &*subTargetInfo);
@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
         std::cout << "Can't create disassembler" << std::endl;
     }
 
-    auto instrs = instructions(*disAsm, buffer, outs());
+    auto instrs            = instructions(*disAsm, buffer, outs());
     MCInstPrinter *printer = target->createMCInstPrinter(triple, 0, *asmInfo, *instrInfo, *registerInfo);
     for (MCInst &i : instrs) {
         printer->printInst(&i, 0, "", *subTargetInfo, outs());

@@ -5,11 +5,11 @@
 #include <stdio.h> // temporary
 
 class Hook {
-    void *m_pSource = nullptr;
+    void *m_pSource      = nullptr;
     void *m_pDestination = nullptr;
-    void *m_pTrampoline = nullptr;
+    void *m_pTrampoline  = nullptr;
 
-    size_t m_hookSize = 0; // size needed at the beginning of the hooked function
+    size_t m_hookSize       = 0; // size needed at the beginning of the hooked function
     size_t m_trampolineSize = 0;
 
     bool m_isHooked = false;
@@ -50,7 +50,7 @@ class Hook {
         return true;
     }
 
-    Hook(const Hook &) = delete;
+    Hook(const Hook &)            = delete;
     Hook &operator=(const Hook &) = delete;
 };
 

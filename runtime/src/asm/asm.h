@@ -18,7 +18,7 @@ static constexpr size_t ABSOLUTE_JMP_ADDR_OFFSET = 2;
 static constexpr uint8_t PUSH_RAX[] = {0x50};
 
 static constexpr uint8_t POP_RAX[] = {0x58};
-static constexpr uint8_t NOP_BYTE = 0x90;
+static constexpr uint8_t NOP_BYTE  = 0x90;
 #else
 #error Only x86-64 is supported at the moment
 #endif

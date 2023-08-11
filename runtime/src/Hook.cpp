@@ -29,7 +29,7 @@ bool Hook::hook() {
     }
 
     constexpr size_t MIN_HOOK_SIZE = sizeof(ABSOLUTE_JMP) + sizeof(POP_RAX);
-    size_t hookSize = 0;
+    size_t hookSize                = 0;
     while (hookSize < MIN_HOOK_SIZE) {
         hookSize += instructionLength((uint8_t *)m_pSource + hookSize, 16); // arbitrary max length
         printf("%d, ", (int)hookSize);
@@ -66,8 +66,8 @@ bool Hook::hook() {
     // restore default protection
     mprotect((uint8_t *)m_pSource - ((long)m_pSource % page_size), page_size, PROT_READ | PROT_EXEC);
 
-    m_isHooked = true;
-    m_hookSize = hookSize;
+    m_isHooked       = true;
+    m_hookSize       = hookSize;
     m_trampolineSize = trampolineSize;
 
     return true;

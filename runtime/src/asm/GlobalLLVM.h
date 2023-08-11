@@ -29,7 +29,7 @@ class GlobalLLVM {
     llvm::MCAsmInfo *asmInfo() { CHECK_INIT return m_pAsmInfo.get(); }
     llvm::MCContext *context() { CHECK_INIT return m_pContext.get(); }
 #undef CHECK_INIT
-    GlobalLLVM(const GlobalLLVM &) = delete;
+    GlobalLLVM(const GlobalLLVM &)            = delete;
     GlobalLLVM &operator=(const GlobalLLVM &) = delete;
 
   private:
