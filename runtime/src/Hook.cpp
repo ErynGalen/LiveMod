@@ -31,7 +31,15 @@ bool Hook::hook() {
     constexpr size_t MIN_HOOK_SIZE = sizeof(ABSOLUTE_JMP) + sizeof(POP_RAX);
     size_t hookSize                = 0;
     while (hookSize < MIN_HOOK_SIZE) {
-        hookSize += instructionLength((uint8_t *)m_pSource + hookSize, 16); // arbitrary max length
+        InstructionInfo info;
+        bool success = info.atAddr((uint8_t *)m_pSource + hookSize, 16); // arbitrary max length
+        if (!success) {
+            printf("oops invalid instruction?\n");
+        }
+        if (info.m_usesProgramCounter) {
+            printf("[Hook] Detected program counter usage in hook at %p.\n", (uint8_t *)m_pSource + hookSize);
+        }
+        hookSize += info.m_length;
     }
 
     size_t trampolineSize = hookSize + sizeof(PUSH_RAX) + sizeof(ABSOLUTE_JMP);

@@ -5,9 +5,12 @@
 #include <cstdint>
 #include <stddef.h>
 
-/// length of the instruction at `addr`, limited by the specified maximum lenght
-/// return 0 on error, and a positive value on succes
-size_t instructionLength(uint8_t *addr, size_t maxLength);
+struct InstructionInfo {
+    size_t m_length = 0;
+    bool m_usesProgramCounter = false;
+    /// Info of the instruction at `addr`,  limited by the specified max length
+    bool atAddr(uint8_t *addr, size_t maxLength);
+};
 
 #if defined(__x86_64__)
 // mov rax, 0xyyyyyyyyyyyyyyyy

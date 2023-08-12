@@ -11,14 +11,12 @@
 
 using namespace llvm;
 
-size_t instructionLength(uint8_t *addr, size_t maxLength) {
-    std::vector<uint64_t> lengths;
-
+bool InstructionInfo::atAddr(uint8_t *addr, size_t maxLength) {
     std::unique_ptr<MCDisassembler> disAsm(
         g_LLVM.target()->createMCDisassembler(*g_LLVM.subTargetInfo(), *g_LLVM.context()));
     if (!disAsm) {
         std::cout << "Couldn't create MCDisassembler" << std::endl;
-        return 0;
+        return false;
     }
 
     ArrayRef<uint8_t> bytes(addr, maxLength);
@@ -31,7 +29,7 @@ size_t instructionLength(uint8_t *addr, size_t maxLength) {
         std::cout << "Unknown instruction: ";
         instruction.print(outs());
         std::cout << std::endl;
-        return 0;
+        return false;
 
     case MCDisassembler::DecodeStatus::SoftFail:
         std::cout << "Weird instruction: ";
@@ -40,8 +38,18 @@ size_t instructionLength(uint8_t *addr, size_t maxLength) {
         [[fallthrough]];
 
     case MCDisassembler::DecodeStatus::Success:
-
-        return instructionLength;
+        m_length = instructionLength;
+        // check for program counter usages
+        unsigned int programCounterRegister = g_LLVM.registerInfo()->getProgramCounter().id();
+        for (int op_n = 0; op_n < instruction.getNumOperands(); op_n++) {
+            auto operand = instruction.getOperand(op_n);
+            if (operand.isReg() && operand.getReg() == programCounterRegister) {
+                m_usesProgramCounter = true;
+                break;
+            }
+        }
+        return true;
     }
-    return instructionLength; // shouldn't happen
+
+    exit(-1); // shouldn't happen
 }
