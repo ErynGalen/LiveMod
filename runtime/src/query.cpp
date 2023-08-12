@@ -1,13 +1,18 @@
 #include "query.h"
 
 #include "GlobalContext.h"
-#include "dlfcn.h"
 #include "process.h"
 #include <cstdint>
 #include <filesystem>
 #include <stdio.h>
 #include <string>
 #include <vector>
+
+#ifdef __linux__
+#include <dlfcn.h>
+#else
+#error Only linux is currently supported
+#endif
 
 struct Symbol {
     std::string m_name;
@@ -21,7 +26,7 @@ struct MemMap {
     bool fromProcMapsLine(std::string line);
 };
 
-void *query_symbol(void *handle, const char *name) {
+void *querySymbol(void *handle, const char *name) {
     void *addr = dlsym(handle, name);
     if (addr) {
         return addr; // found dynamic symbol
@@ -46,7 +51,7 @@ void *query_symbol(void *handle, const char *name) {
     for (int i = 0; i < 4; i++) { // skip 4 first lines
         sym_table_pos = symbols_str.find("\n", sym_table_pos) + 1;
         if (sym_table_pos == std::string::npos) {
-            printf("Unknown symbols list format:\n%s\n", symbols_str.c_str());
+            printf("[Query] Unknown symbols list format:\n%s\n", symbols_str.c_str());
             break;
         }
     }
@@ -80,19 +85,19 @@ void *query_symbol(void *handle, const char *name) {
             }
         }
     } else {
-        printf("Couldn't open /proc/self/maps\n");
+        printf("[Query] Couldn't open /proc/self/maps\n");
         return addr;
     }
 
     if (base_address == nullptr) {
-        printf("Couldn't determine process base address\n");
+        printf("[Query] Couldn't determine process base address\n");
         return addr;
     }
 
     // look for symbol in the list
     for (Symbol &s : symbols) {
         if (s.m_name == name) {
-            printf("found static %p for %s\n", base_address + (uint64_t)s.m_address, name);
+            printf("[Query] Info: found %p for non-dynamic `%s`\n", base_address + (uint64_t)s.m_address, name);
             return base_address + (uint64_t)s.m_address;
         }
     }

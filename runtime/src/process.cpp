@@ -1,7 +1,6 @@
 #include "process.h"
 
 #include "GlobalContext.h"
-#include "dlhook.h"
 #include <cstdio>
 #include <cstring>
 
@@ -13,37 +12,16 @@
 #error Only Linux is currently supported
 #endif
 
-// hook `fork()` so that child processes aren't LD_PRELOADed
-DYNHOOK pid_t fork() {
-    static pid_t (*orig)() = NULL;
-    link_original((void **)&orig, "fork");
-
-    pid_t pid = orig();
-
-    if (pid == 0) {
-        // in child process, fix the environment
-        for (int n = 0; environ[n] != NULL; n++) {
-            static char LD_PRELOAD[] = "LD_PRELOAD";
-            if (strncmp(environ[n], LD_PRELOAD, sizeof(LD_PRELOAD) - 1) == 0) {
-                environ[n][0] = 'D'; // don't LD_PRELOAD the child process
-            }
-        }
-
-        return pid;
-    }
-    return pid; // parent process
-}
-
 std::string execAndGet(char *command, char *const args[]) {
     std::string result;
     if (args == NULL || strcmp(command, args[0]) != 0) {
-        printf("The first argument must be the program name\n");
+        printf("[execAndGet] The first argument must be the program name\n");
         return result;
     }
 
     int pipe_fds[2];
     if (pipe(pipe_fds) == -1) {
-        printf("Couldn't exec\n");
+        printf("[execAndGet] Couldn't exec\n");
     }
     int pid = fork();
     if (pid == 0) {         // child process

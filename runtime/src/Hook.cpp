@@ -1,31 +1,27 @@
 #include "Hook.h"
 #include "asm/asm.h"
-#include "dlhook.h"
 #include "query.h"
 
 #include <cstdint>
-#include <dlfcn.h>
-#include <memory_resource>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef __linux__
+#include <dlfcn.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include <llvm/MC/MCAssembler.h>
-
-int loop() {
-    while (true) {
-        // do stuff
-    }
-    return 0;
-}
+#else
+#error Only Linux is currently supported
+#endif
 
 bool Hook::hook() {
     if (!m_pSource || !m_pDestination) {
         return false;
+    }
+    if (m_isHooked) {
+        return true;
     }
 
     constexpr size_t MIN_HOOK_SIZE = sizeof(ABSOLUTE_JMP) + sizeof(POP_RAX);
@@ -34,10 +30,11 @@ bool Hook::hook() {
         InstructionInfo info;
         bool success = info.atAddr((uint8_t *)m_pSource + hookSize, 16); // arbitrary max length
         if (!success) {
-            printf("oops invalid instruction?\n");
+            printf("[Hook] Couldn't get instruction info at %p.\n", (uint8_t *)m_pSource + hookSize);
         }
         if (info.m_usesProgramCounter) {
             printf("[Hook] Detected program counter usage in hook at %p.\n", (uint8_t *)m_pSource + hookSize);
+            printf("[Hook] Warning: this could cause undefined behaviour when calling the original function.\n");
         }
         hookSize += info.m_length;
     }
@@ -84,5 +81,6 @@ bool Hook::unhook() {
     if (!m_isHooked) {
         return true;
     }
+    // TODO: implement unhooking
     return false;
 }

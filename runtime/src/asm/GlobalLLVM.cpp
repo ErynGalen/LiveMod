@@ -60,6 +60,10 @@ bool GlobalLLVM::init() {
     return true;
 }
 
-GlobalLLVM g_LLVM;
-// use the highest priority to ensure that LLVM is available to other constructors
-__attribute__((constructor(101))) void init_LLVM() { g_LLVM.init(); }
+GlobalLLVM *getGlobalLLVMContext() {
+    static GlobalLLVM context;
+    if (!context.isInitialized()) {
+        context.init();
+    }
+    return &context;
+}

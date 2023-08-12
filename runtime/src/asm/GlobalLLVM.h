@@ -23,6 +23,8 @@ class GlobalLLVM {
         std::cout << "[LLVM] Not initialized!" << std::endl;                                                           \
     }
 
+    bool isInitialized() { return m_initialized; }
+
     const llvm::Target *target() { CHECK_INIT return m_pTarget; }
     llvm::MCSubtargetInfo *subTargetInfo() { CHECK_INIT return m_pSubTargetInfo.get(); }
     llvm::MCRegisterInfo *registerInfo() { CHECK_INIT return m_pRegisterInfo.get(); }
@@ -42,6 +44,6 @@ class GlobalLLVM {
     std::unique_ptr<llvm::MCContext> m_pContext;
 };
 
-extern GlobalLLVM g_LLVM;
+GlobalLLVM *getGlobalLLVMContext();
 
 #endif

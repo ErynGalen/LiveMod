@@ -2,7 +2,6 @@
 #define H_HOOK_H
 
 #include <cstddef>
-#include <stdio.h> // temporary
 
 class Hook {
     void *m_pSource      = nullptr;
@@ -24,25 +23,16 @@ class Hook {
     bool hook();
     bool unhook();
 
-    void deb() {
-        printf("- %d, %d\n", (int)m_hookSize, (int)m_trampolineSize);
-        for (unsigned char *byte_addr = (unsigned char *)m_pTrampoline;
-             byte_addr < (unsigned char *)m_pTrampoline + m_trampolineSize; byte_addr++) {
-            printf("0x%x ", *byte_addr);
-        }
-        printf("\n");
-    }
-
     void *original() { return m_pTrampoline; }
 
-    bool set_source(void *source) {
+    bool setSource(void *source) {
         if (m_isHooked) {
             return false;
         }
         m_pSource = source;
         return true;
     }
-    bool set_destination(void *destination) {
+    bool setDestination(void *destination) {
         if (m_isHooked) {
             return false;
         }

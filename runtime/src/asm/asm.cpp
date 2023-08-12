@@ -12,10 +12,12 @@
 using namespace llvm;
 
 bool InstructionInfo::atAddr(uint8_t *addr, size_t maxLength) {
+    GlobalLLVM *llvm = getGlobalLLVMContext();
+
     std::unique_ptr<MCDisassembler> disAsm(
-        g_LLVM.target()->createMCDisassembler(*g_LLVM.subTargetInfo(), *g_LLVM.context()));
+        llvm->target()->createMCDisassembler(*llvm->subTargetInfo(), *llvm->context()));
     if (!disAsm) {
-        std::cout << "Couldn't create MCDisassembler" << std::endl;
+        std::cout << "[Asm] Couldn't create MCDisassembler" << std::endl;
         return false;
     }
 
@@ -26,13 +28,13 @@ bool InstructionInfo::atAddr(uint8_t *addr, size_t maxLength) {
         disAsm->getInstruction(instruction, instructionLength, bytes, (uint64_t)addr, nulls());
     switch (status) {
     case MCDisassembler::DecodeStatus::Fail:
-        std::cout << "Unknown instruction: ";
+        std::cout << "[Asm] Unknown instruction: ";
         instruction.print(outs());
         std::cout << std::endl;
         return false;
 
     case MCDisassembler::DecodeStatus::SoftFail:
-        std::cout << "Weird instruction: ";
+        std::cout << "[Asm] Warning: Weird instruction: ";
         instruction.print(outs());
         std::cout << std::endl;
         [[fallthrough]];
@@ -40,7 +42,7 @@ bool InstructionInfo::atAddr(uint8_t *addr, size_t maxLength) {
     case MCDisassembler::DecodeStatus::Success:
         m_length = instructionLength;
         // check for program counter usages
-        unsigned int programCounterRegister = g_LLVM.registerInfo()->getProgramCounter().id();
+        unsigned int programCounterRegister = llvm->registerInfo()->getProgramCounter().id();
         for (int op_n = 0; op_n < instruction.getNumOperands(); op_n++) {
             auto operand = instruction.getOperand(op_n);
             if (operand.isReg() && operand.getReg() == programCounterRegister) {
