@@ -37,8 +37,9 @@ std::string execAndGet(char *command, char *const args[]) {
     waitpid(pid, &child_status, 0);
 
     char buffer[128];
-    buffer[sizeof(buffer) - 1] = 0;
-    while (read(pipe_fds[0], buffer, sizeof(buffer) - 1) > 0) {
+    size_t sizeRead = 0;
+    while ((sizeRead = read(pipe_fds[0], buffer, sizeof(buffer) - 1)) > 0) {
+        buffer[sizeRead] = 0; // terminate C string
         result.append(buffer);
     }
 

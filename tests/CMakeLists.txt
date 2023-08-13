@@ -8,5 +8,5 @@ add_executable(disas
 target_link_libraries(disas -lLLVM)
 
 add_executable(exec
-  exec.c
+  exec.cpp
 )
