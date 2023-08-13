@@ -14,12 +14,14 @@ cmake ..
 cmake --build .
 ```
 ### Running
-The runtime library is `build/runtime/libruntime.so`.
+The launcher is `/build/src/livemod`
+The runtime library is `build/src/runtime/libruntime.so`.
 
-To hook an executable, execute it as follow:
+To hook a command, execute it as follow:
 ```
-LD_PRELOAD=<path-to-LiveMod>/build/runtime/libruntime.so <executable>
+<livemod> <libruntime> command [arg1 arg2 ...]
 ```
+where `<livemod>` is the path to the `livemod` executable, and  `<libruntime>` the path to `libruntime.so`.
 
 # Ideas
 
