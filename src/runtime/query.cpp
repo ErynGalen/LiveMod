@@ -20,27 +20,13 @@ struct Symbol {
     bool fromNmLine(std::string line);
 };
 
-struct MemMap {
-    uint8_t *m_baseAddres = nullptr;
-    std::string m_file; // file mapped to the memory
-    bool fromProcMapsLine(std::string line);
-};
-
-void *querySymbol(void *handle, const char *name) {
-    void *addr = dlsym(handle, name);
-    if (addr) {
-        return addr; // found dynamic symbol
+// get list of symbols in binary
+std::vector<Symbol> getSymbolList(bool force) {
+    static std::vector<Symbol> symbols;
+    // cache the result
+    if (!force && !symbols.empty()) {
+        return symbols;
     }
-    // prevents infinite recursion when `query_symbol` needs a hooked function
-    if (g_Context.m_isNative) {
-        return addr;
-    }
-    MakeNativeGuard ng;
-
-    // handle non-dynamic symbols
-
-    // get list of symbols in binary
-    std::vector<Symbol> symbols;
 
     std::string exePath     = std::filesystem::canonical("/proc/self/exe").string();
     char *command           = (char *)"llvm-nm";
@@ -60,8 +46,21 @@ void *querySymbol(void *handle, const char *name) {
         sym_table_pos = next_pos + 1;
     }
 
-    // get the base address of the process in the virtual address space
-    uint8_t *base_address = nullptr;
+    return symbols;
+}
+
+struct MemMap {
+    uint8_t *m_baseAddres = nullptr;
+    std::string m_file; // file mapped to the memory
+    bool fromProcMapsLine(std::string line);
+};
+
+std::vector<MemMap> getMapList(bool force) {
+    static std::vector<MemMap> maps;
+    // cache result
+    if (!force && !maps.empty()) {
+        return maps;
+    }
 
     FILE *maps_file = fopen("/proc/self/maps", "r");
     if (maps_file) {
@@ -70,16 +69,42 @@ void *querySymbol(void *handle, const char *name) {
             MemMap current_map;
             std::string line(buffer);
             if (current_map.fromProcMapsLine(line)) {
-                if (current_map.m_file == exePath) {
-                    if (base_address == nullptr || current_map.m_baseAddres < base_address) {
-                        base_address = current_map.m_baseAddres;
-                    }
-                }
+                maps.push_back(current_map);
             }
         }
     } else {
         printf("[Query] Couldn't open /proc/self/maps\n");
+    }
+
+    return maps;
+}
+
+void *querySymbol(void *handle, const char *name) {
+    void *addr = dlsym(handle, name);
+    if (addr) {
+        return addr; // found dynamic symbol
+    }
+    // prevents infinite recursion when `query_symbol` needs a hooked function
+    if (g_Context.m_isNative) {
         return addr;
+    }
+    MakeNativeGuard ng;
+
+    // handle non-dynamic symbols
+
+    std::vector symbols = getSymbolList(false);
+
+    // get the base address of the process in the virtual address space
+    uint8_t *base_address = nullptr;
+
+    std::string exePath = std::filesystem::canonical("/proc/self/exe").string();
+    std::vector maps    = getMapList(false);
+    for (auto &map : maps) {
+        if (map.m_file == exePath) {
+            if (base_address == nullptr || map.m_baseAddres < base_address) {
+                base_address = map.m_baseAddres;
+            }
+        }
     }
 
     if (base_address == nullptr) {
@@ -119,7 +144,6 @@ bool Symbol::fromNmLine(std::string line) {
     }
     m_address = (uint8_t *)address;
 
-    printf("parsed symbol `%s` = %p\n", m_name.c_str(), m_address);
     return true;
 }
 
