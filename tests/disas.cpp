@@ -42,6 +42,7 @@ std::vector<MCInst> instructions(const MCDisassembler &disAsm, std::vector<uint8
         case MCDisassembler::DecodeStatus::SoftFail:
             std::cout << "Weird instruction" << std::endl;
 
+            [[fallthrough]];
         case MCDisassembler::DecodeStatus::Success:
             std::cout << "Decoded instruction, size = " << instrSize << std::endl;
             instr.print(output);

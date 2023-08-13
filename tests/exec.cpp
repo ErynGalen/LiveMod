@@ -43,7 +43,7 @@ int main() {
         args_array[n] = nullptr;
 
         int ret = execvp(command.c_str(), args_array);
-        exit(42);
+        exit(ret);
     }
     // parent process
     std::cout << "Parent" << std::endl;

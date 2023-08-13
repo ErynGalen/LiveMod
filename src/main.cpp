@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 #include <unistd.h>
 
 int launch(const char *library, char *commandParts[], int partCount) {
-    const char *old_ld_preload  = getenv("LD_PRELOAD");
+    const char *_old_ld_preload  = getenv("LD_PRELOAD");
     std::string libraryAbsolute = std::filesystem::canonical(library).string();
     std::cout << "[LiveMod] Launching with library `" << libraryAbsolute << "`" << std::endl;
 

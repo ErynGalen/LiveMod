@@ -11,7 +11,7 @@ int main() {
     void *program        = dlopen(NULL, RTLD_NOW);
     void *address        = dlsym(NULL, sym_name);
     Dl_info info;
-    if (!dladdr(main, &info)) {
+    if (!dladdr((void *)main, &info)) {
         printf("Boo error: %s\n", dlerror());
     }
     printf("Program: %p\nAddress of %s: %p\nError: %s\n", program, sym_name, address, dlerror());

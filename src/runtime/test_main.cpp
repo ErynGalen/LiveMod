@@ -11,7 +11,7 @@ int our_main(int argc, char **argv) {
     printf("[TestMain] Wee the hook hooked!\n");
     printf("[TestMain] we can print the program name: %s\n", argv[0]);
     ORIGINAL(hook_main, int, main, int, char **);
-    printf("[TestMain] call orig: %p\n", orig_main);
+    printf("[TestMain] call orig: %p\n", (void *)orig_main);
     orig_main(argc, argv);
     return 0;
 }

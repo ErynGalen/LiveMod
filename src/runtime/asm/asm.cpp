@@ -43,7 +43,7 @@ bool InstructionInfo::atAddr(uint8_t *addr, size_t maxLength) {
         m_length = instructionLength;
         // check for program counter usages
         unsigned int programCounterRegister = llvm->registerInfo()->getProgramCounter().id();
-        for (int op_n = 0; op_n < instruction.getNumOperands(); op_n++) {
+        for (unsigned int op_n = 0; op_n < instruction.getNumOperands(); op_n++) {
             auto operand = instruction.getOperand(op_n);
             if (operand.isReg() && operand.getReg() == programCounterRegister) {
                 m_usesProgramCounter = true;
