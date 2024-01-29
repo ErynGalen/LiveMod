@@ -8,6 +8,8 @@
 #define QUERY_NEXT (-1)
 #endif
 
+#include <stdint.h>
+
 // Get the addres of a dynamic or static symbol
 void *querySymbol(void *handle, const char *name);
 

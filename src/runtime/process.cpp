@@ -1,5 +1,7 @@
 #include "process.h"
+#define MODULE "Process"
 
+#include "log.h"
 #include "GlobalContext.h"
 #include <cstdio>
 #include <cstring>
@@ -15,13 +17,13 @@
 std::string execAndGet(char *command, char *const args[]) {
     std::string result;
     if (args == NULL || strcmp(command, args[0]) != 0) {
-        printf("[execAndGet] The first argument must be the program name\n");
+        LOGS("The first argument must be the program name");
         return result;
     }
 
     int pipe_fds[2];
     if (pipe(pipe_fds) == -1) {
-        printf("[execAndGet] Couldn't exec\n");
+        LOGS("Couldn't exec");
     }
     int pid = fork();
     if (pid == 0) {         // child process

@@ -31,11 +31,12 @@ int main(int argc, char *argv[]) {
 
 #ifdef __linux__
 #include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <unistd.h>
 
 int launch(const char *library, char *commandParts[], int partCount) {
-    const char *_old_ld_preload  = getenv("LD_PRELOAD");
+    const char *_old_ld_preload = getenv("LD_PRELOAD");
     std::string libraryAbsolute = std::filesystem::canonical(library).string();
     std::cout << "[LiveMod] Launching with library `" << libraryAbsolute << "`" << std::endl;
 
@@ -44,7 +45,9 @@ int launch(const char *library, char *commandParts[], int partCount) {
     commandParts            = (char **)realloc((void *)commandParts, partCount + sizeof(char *));
     commandParts[partCount] = nullptr;
 
-    execvp(commandParts[0], commandParts);
+    if (execvp(commandParts[0], commandParts) == -1) {
+        std::cout << "Couldnt't exec: " << strerror(errno) << std::endl;
+    }
     exit(42); // shouldn't happen
 }
 #else

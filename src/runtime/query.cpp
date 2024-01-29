@@ -1,6 +1,8 @@
 #include "query.h"
+#define MODULE "Query"
 
 #include "GlobalContext.h"
+#include "log.h"
 #include "process.h"
 #include <cstdint>
 #include <filesystem>
@@ -73,7 +75,7 @@ std::vector<MemMap> getMapList(bool force) {
             }
         }
     } else {
-        printf("[Query] Couldn't open /proc/self/maps\n");
+        LOGS("Couldn't open /proc/self/maps");
     }
 
     return maps;
@@ -108,14 +110,14 @@ void *querySymbol(void *handle, const char *name) {
     }
 
     if (base_address == nullptr) {
-        printf("[Query] Couldn't determine process base address\n");
+        LOGS("Coudln't determine process base address");
         return addr;
     }
 
     // look for symbol in the list
     for (Symbol &s : symbols) {
         if (s.m_name == name) {
-            printf("[Query] Info: found %p for non-dynamic `%s`\n", base_address + (uint64_t)s.m_address, name);
+            LOG("Info: found %p for non-dynamic `%s`", base_address + (uint64_t)s.m_address, name);
             return base_address + (uint64_t)s.m_address;
         }
     }

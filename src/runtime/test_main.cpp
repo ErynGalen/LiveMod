@@ -1,46 +1,48 @@
 #include "GlobalContext.h"
-#include "Hook.h"
-#include "asm/GlobalLLVM.h"
+#include "hook.h"
 #include "query.h"
+
+#define MODULE "Init"
+#include "log.h"
 
 #include <stdio.h>
 
-static Hook hook_main;
+static hook_t hook_main2;
 
 int our_main(int argc, char **argv) {
-    printf("[TestMain] Wee the hook hooked!\n");
-    printf("[TestMain] we can print the program name: %s\n", argv[0]);
-    ORIGINAL(hook_main, int, main, int, char **);
-    printf("[TestMain] call orig: %p\n", (void *)orig_main);
-    orig_main(argc, argv);
+    LOGS("The hook hooked");
+    LOG("we can print the program name: %s", argv[0]);
+    SET_ORIGINAL(hook_main2, int, main2, int, char **);
+    LOG("call orig: %p", (void *)orig_main2);
+    orig_main2(argc, argv);
     return 0;
 }
 
-static Hook hook_my_func;
+static hook_t hook_my_func2;
 
 void my_func() {
     puts("{my_func}");
-    ORIGINAL(hook_my_func, void, puts);
+    SET_ORIGINAL(hook_my_func2, void, puts);
     orig_puts();
 }
 
 __attribute__((constructor)) void init_hooks() {
+    disasm_t disasm;
+    disasm_create(&disasm);
     {
         MakeNativeGuard ng;
-        printf("[init] before main native\n");
+        LOGS("before main native");
     }
-    printf("[init] before main non-native\n");
+    LOGS("before main non-native");
 
     void *main_addr = querySymbol(nullptr, "main");
-    hook_main.setDestination((void *)our_main);
-    hook_main.setSource(main_addr);
-    if (!hook_main.hook()) {
-        printf("[init] Couldn't hook main :(\n");
+    if (hook(&disasm, main_addr, 1024, (void *)our_main, &hook_main2)) {
+        LOGS("Couldn't hook main :(");
     }
 
-    hook_my_func.setDestination((void *)my_func);
-    hook_my_func.setSource(querySymbol(nullptr, "my_func"));
-    if (!hook_my_func.hook()) {
-        printf("[init] Couldn't hook my_func :(\n");
+
+    if (hook(&disasm, querySymbol(nullptr, "my_func"), 1024, (void *)my_func, &hook_my_func2)) {
+        LOGS("Couldn't hook my_func :(");
     }
+    disasm_destroy(&disasm);
 }
